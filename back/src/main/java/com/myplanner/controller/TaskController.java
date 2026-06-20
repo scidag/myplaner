@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,9 +28,17 @@ public class TaskController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createDateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createDateTo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateTo,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String sortDir) {
         Long userId = (Long) auth.getPrincipal();
-        return BaseResponse.success(taskService.getTasks(userId, page, size, status, keyword));
+        return BaseResponse.success(taskService.getTasks(userId, page, size, status, keyword, createDate,
+                createDateFrom, createDateTo, dueDateFrom, dueDateTo, sort, sortDir));
     }
 
     @PostMapping
@@ -66,6 +75,29 @@ public class TaskController {
             @RequestBody Map<String, String> body) {
         Long userId = (Long) auth.getPrincipal();
         taskService.updateStatus(userId, id, body.get("status"));
+        return BaseResponse.success();
+    }
+
+    @PatchMapping("/batch/status")
+    public BaseResponse<Void> batchUpdateStatus(
+            Authentication auth,
+            @RequestBody Map<String, Object> body) {
+        Long userId = (Long) auth.getPrincipal();
+        @SuppressWarnings("unchecked")
+        List<Long> ids = ((List<Integer>) body.get("ids")).stream().map(Long::valueOf).toList();
+        String status = (String) body.get("status");
+        taskService.batchUpdateStatus(userId, ids, status);
+        return BaseResponse.success();
+    }
+
+    @DeleteMapping("/batch")
+    public BaseResponse<Void> batchDelete(
+            Authentication auth,
+            @RequestBody Map<String, Object> body) {
+        Long userId = (Long) auth.getPrincipal();
+        @SuppressWarnings("unchecked")
+        List<Long> ids = ((List<Integer>) body.get("ids")).stream().map(Long::valueOf).toList();
+        taskService.batchDelete(userId, ids);
         return BaseResponse.success();
     }
 

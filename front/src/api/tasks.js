@@ -1,7 +1,7 @@
 import request from '../utils/request';
 
-export function getTasks(params) {
-  return request.get('/tasks', { params });
+export function getTasks(params, config = {}) {
+  return request.get('/tasks', { params, ...config });
 }
 
 export function createTask(data) {
@@ -18,4 +18,12 @@ export function updateTaskStatus(id, status) {
 
 export function deleteTask(id) {
   return request.delete(`/tasks/${id}`);
+}
+
+export function batchUpdateStatus(ids, status) {
+  return request.patch('/tasks/batch/status', { ids, status });
+}
+
+export function batchDelete(ids) {
+  return request.delete('/tasks/batch', { data: { ids } });
 }

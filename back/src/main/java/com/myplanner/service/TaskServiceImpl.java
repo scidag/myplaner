@@ -28,7 +28,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public PageResult<SysTask> getTasks(Long userId, int page, int size, String status, String keyword) {
+    public PageResult<SysTask> getTasks(Long userId, int page, int size, String status, String keyword, LocalDate createDate,
+                                        LocalDate createDateFrom, LocalDate createDateTo, LocalDate dueDateFrom, LocalDate dueDateTo,
+                                        String sort, String sortDir) {
         if (size > 100) size = 100;
         if (page < 1) page = 1;
         if (size < 1) size = 20;
@@ -42,10 +44,45 @@ public class TaskServiceImpl implements TaskService {
         if (StringUtils.hasText(keyword)) {
             wrapper.like(SysTask::getTitle, keyword.trim());
         }
+        if (createDate != null) {
+            wrapper.apply("DATE(create_time) = {0}", createDate);
+        }
+        if (createDateFrom != null) {
+            wrapper.ge(SysTask::getCreateTime, createDateFrom.atStartOfDay());
+        }
+        if (createDateTo != null) {
+            wrapper.le(SysTask::getCreateTime, createDateTo.atTime(23, 59, 59));
+        }
+        if (dueDateFrom != null) {
+            wrapper.ge(SysTask::getDueDate, dueDateFrom);
+        }
+        if (dueDateTo != null) {
+            wrapper.le(SysTask::getDueDate, dueDateTo);
+        }
 
-        wrapper.last("ORDER BY FIELD(status,'IN_PROGRESS','TODO','DONE') ASC, " +
-                "CASE WHEN status <> 'DONE' THEN due_date END ASC, " +
-                "CASE WHEN status = 'DONE' THEN completed_time END DESC");
+        if (StringUtils.hasText(sort)) {
+            boolean asc = "asc".equalsIgnoreCase(sortDir);
+            String field = sort;
+            if ("createTime".equals(field)) {
+                if (asc) wrapper.orderByAsc(SysTask::getCreateTime);
+                else wrapper.orderByDesc(SysTask::getCreateTime);
+            } else if ("dueDate".equals(field)) {
+                wrapper.last("ORDER BY " + (asc ? "due_date IS NULL ASC, due_date ASC" : "due_date IS NULL DESC, due_date DESC"));
+            } else if ("status".equals(field)) {
+                wrapper.last("ORDER BY FIELD(status,'IN_PROGRESS','TODO','DONE') " + (asc ? "ASC" : "DESC"));
+            } else if ("title".equals(field)) {
+                if (asc) wrapper.orderByAsc(SysTask::getTitle);
+                else wrapper.orderByDesc(SysTask::getTitle);
+            }
+        } else if ("TODO".equalsIgnoreCase(status)) {
+            wrapper.orderByDesc(SysTask::getCreateTime);
+        } else if (createDate != null) {
+            wrapper.last("ORDER BY FIELD(status,'IN_PROGRESS','TODO','DONE') ASC");
+        } else {
+            wrapper.last("ORDER BY FIELD(status,'IN_PROGRESS','TODO','DONE') ASC, " +
+                    "CASE WHEN status <> 'DONE' THEN due_date END ASC, " +
+                    "CASE WHEN status = 'DONE' THEN completed_time END DESC");
+        }
 
         IPage<SysTask> pg = taskMapper.selectPage(new Page<>(page, size), wrapper);
 
@@ -138,5 +175,42 @@ public class TaskServiceImpl implements TaskService {
             throw new BusinessException(ResultCode.NOT_FOUND);
         }
         taskMapper.deleteById(taskId);
+    }
+
+    @Override
+    public void batchUpdateStatus(Long userId, List<Long> ids, String status) {
+        if (!List.of("TODO", "IN_PROGRESS", "DONE").contains(status)) {
+            throw new BusinessException(400, "无效的状态值");
+        }
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(400, "请选择要操作的任务");
+        }
+        List<SysTask> tasks = taskMapper.selectBatchIds(ids);
+        for (SysTask task : tasks) {
+            if (!task.getUserId().equals(userId)) {
+                throw new BusinessException(ResultCode.FORBIDDEN);
+            }
+            task.setStatus(status);
+            if ("DONE".equals(status)) {
+                task.setCompletedTime(LocalDateTime.now());
+            } else {
+                task.setCompletedTime(null);
+            }
+            taskMapper.updateById(task);
+        }
+    }
+
+    @Override
+    public void batchDelete(Long userId, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(400, "请选择要删除的任务");
+        }
+        List<SysTask> tasks = taskMapper.selectBatchIds(ids);
+        for (SysTask task : tasks) {
+            if (!task.getUserId().equals(userId)) {
+                throw new BusinessException(ResultCode.FORBIDDEN);
+            }
+        }
+        taskMapper.deleteBatchIds(ids);
     }
 }

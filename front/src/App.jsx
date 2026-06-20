@@ -3,6 +3,7 @@ import { ToastProvider } from './components/Toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import AllTasks from './pages/AllTasks';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -42,6 +43,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <AllTasks />
               </ProtectedRoute>
             }
           />
