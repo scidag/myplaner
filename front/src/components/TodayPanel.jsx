@@ -2,12 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import TaskCard from './TaskCard';
 import { getTasks } from '../api/tasks';
 
+/** 获取本地日期，格式 YYYY-MM-DD，避免 toISOString() 使用 UTC 导致时区偏移 */
+function getLocalDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function TodayPanel({ refreshKey, onStatusChange, onDelete }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDate(new Date()));
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDate(new Date());
 
   const fetchTasks = useCallback(async (signal) => {
     setLoading(true);
@@ -32,7 +37,7 @@ export default function TodayPanel({ refreshKey, onStatusChange, onDelete }) {
   const shiftDate = (days) => {
     const d = new Date(selectedDate + 'T12:00:00');
     d.setDate(d.getDate() + days);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(getLocalDate(d));
   };
 
   const goToToday = () => setSelectedDate(today);
@@ -45,7 +50,11 @@ export default function TodayPanel({ refreshKey, onStatusChange, onDelete }) {
   const title = isToday ? '今日创建' : `${formatted} 创建`;
   const subtitle = isToday ? '显示今天创建的任务' : `显示 ${formatted} 创建的任务`;
 
+  const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   const sorted = [...tasks].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 1;
+    const pb = PRIORITY_ORDER[b.priority] ?? 1;
+    if (pa !== pb) return pa - pb;
     const order = { IN_PROGRESS: 0, TODO: 1, DONE: 2 };
     return (order[a.status] ?? 1) - (order[b.status] ?? 1);
   });

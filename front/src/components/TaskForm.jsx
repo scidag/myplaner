@@ -1,5 +1,9 @@
 import { useState } from 'react';
 
+function getLocalDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function TaskForm({ onAdd, loading }) {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -8,13 +12,13 @@ export default function TaskForm({ onAdd, loading }) {
     e.preventDefault();
     if (!title.trim()) return;
     if (title.length > 100) return;
-    if (dueDate && new Date(dueDate) < new Date(new Date().toDateString())) return;
+    if (dueDate && dueDate < getLocalDate(new Date())) return;
     onAdd({ title: title.trim(), dueDate: dueDate || null });
     setTitle('');
     setDueDate('');
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDate(new Date());
 
   return (
     <form className="add-task-section" onSubmit={handleSubmit}>

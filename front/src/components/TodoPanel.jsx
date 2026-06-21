@@ -28,7 +28,11 @@ export default function TodoPanel({ refreshKey, onStatusChange, onDelete }) {
     return () => controller.abort();
   }, [fetchTasks, refreshKey]);
 
+  const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   const sorted = [...tasks].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 1;
+    const pb = PRIORITY_ORDER[b.priority] ?? 1;
+    if (pa !== pb) return pa - pb;
     if (a.createTime > b.createTime) return -1;
     if (a.createTime < b.createTime) return 1;
     return 0;
@@ -60,7 +64,7 @@ export default function TodoPanel({ refreshKey, onStatusChange, onDelete }) {
           <>
             <div className="task-count-row">
               <span>共 <strong>{sorted.length}</strong> 个待办</span>
-              <span>按创建时间倒序</span>
+              <span>按优先级排序</span>
             </div>
             {sorted.map((task, i) => (
               <TaskCard

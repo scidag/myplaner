@@ -1,8 +1,17 @@
 const STATUS_LABEL = { TODO: '待办', IN_PROGRESS: '进行中', DONE: '已完成' };
 const STATUS_DOT = { TODO: 'todo', IN_PROGRESS: 'in-progress', DONE: 'done' };
+const PRIORITY_CONFIG = {
+  HIGH:   { label: '高', cls: 'priority-badge-high'   },
+  MEDIUM: { label: '中', cls: 'priority-badge-medium' },
+  LOW:    { label: '低', cls: 'priority-badge-low'    },
+};
+
+function getLocalDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export default function TaskTable({ tasks, selectedIds, onToggleSelect, onEdit, onStatusCycle, onDelete }) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDate(new Date());
 
   return (
     <table className="task-table">
@@ -12,6 +21,7 @@ export default function TaskTable({ tasks, selectedIds, onToggleSelect, onEdit, 
           <th className="col-status-dot" />
           <th>任务</th>
           <th className="col-status">状态</th>
+          <th className="col-priority">优先级</th>
           <th className="col-create-date">创建日期</th>
           <th className="col-due-date">截止日期</th>
           <th className="col-actions">操作</th>
@@ -22,6 +32,7 @@ export default function TaskTable({ tasks, selectedIds, onToggleSelect, onEdit, 
           const isDone = task.status === 'DONE';
           const isOverdue = task.dueDate && task.dueDate < today && task.status !== 'DONE';
           const isSelected = selectedIds.has(task.id);
+          const p = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM;
 
           return (
             <tr key={task.id} className={`${isSelected ? 'selected' : ''}`}>
@@ -41,6 +52,9 @@ export default function TaskTable({ tasks, selectedIds, onToggleSelect, onEdit, 
               </td>
               <td className="col-status">
                 <span className={`status-badge ${task.status.toLowerCase()}`}>{STATUS_LABEL[task.status]}</span>
+              </td>
+              <td className="col-priority">
+                <span className={`priority-badge ${p.cls}`}>{p.label}</span>
               </td>
               <td className="col-create-date">
                 <span className="date-cell">{task.createTime ? task.createTime.substring(0, 10) : '-'}</span>

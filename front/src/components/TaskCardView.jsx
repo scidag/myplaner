@@ -1,7 +1,16 @@
 const STATUS_LABEL = { TODO: '待办', IN_PROGRESS: '进行中', DONE: '已完成' };
+const PRIORITY_CONFIG = {
+  HIGH:   { label: '高', cls: 'priority-badge-high'   },
+  MEDIUM: { label: '中', cls: 'priority-badge-medium' },
+  LOW:    { label: '低', cls: 'priority-badge-low'    },
+};
+
+function getLocalDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export default function TaskCardView({ tasks, selectedIds, onToggleSelect, onEdit, onStatusCycle, onDelete }) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDate(new Date());
 
   return (
     <div className="task-card-grid">
@@ -9,6 +18,7 @@ export default function TaskCardView({ tasks, selectedIds, onToggleSelect, onEdi
         const isDone = task.status === 'DONE';
         const isOverdue = task.dueDate && task.dueDate < today && task.status !== 'DONE';
         const isSelected = selectedIds.has(task.id);
+        const p = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM;
 
         return (
           <div key={task.id} className={`task-card-view${isSelected ? ' selected' : ''}`}>
@@ -25,6 +35,7 @@ export default function TaskCardView({ tasks, selectedIds, onToggleSelect, onEdi
                 📌 {task.dueDate || '无截止日期'}
                 {isOverdue && <span style={{ marginLeft: 4 }}>⚠️</span>}
               </span>
+              <span className={`priority-badge ${p.cls}`}>{p.label}</span>
             </div>
             <div className="card-actions">
               <button className="action-btn status-next" onClick={() => onStatusCycle(task.id)} title="切换状态">🔄</button>

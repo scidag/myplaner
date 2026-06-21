@@ -16,9 +16,16 @@ const STATUS_DOT = {
   DONE: 'done',
 };
 
+const PRIORITY_CONFIG = {
+  HIGH:   { label: '高', cls: 'priority-badge-high',   icon: '🔴' },
+  MEDIUM: { label: '中', cls: 'priority-badge-medium', icon: '🟡' },
+  LOW:    { label: '低', cls: 'priority-badge-low',    icon: '🟢' },
+};
+
 export default function TaskCard({ task, index, onStatusChange, onDelete }) {
   const isDone = task.status === 'DONE';
   const dateLabel = new Date(task.createTime).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+  const priority = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM;
 
   const handleClick = () => {
     const order = ['TODO', 'IN_PROGRESS', 'DONE'];
@@ -47,6 +54,9 @@ export default function TaskCard({ task, index, onStatusChange, onDelete }) {
         <div className="task-card-meta">
           <span>🕐 {dateLabel}</span>
           <span>📌 {task.dueDate ? `截止: ${task.dueDate}` : '无截止日期'}</span>
+          <span className={`priority-badge ${priority.cls}`}>
+            {priority.icon} {priority.label}
+          </span>
         </div>
       </div>
       <span className={`task-card-status ${STATUS_BADGE[task.status]}`}>

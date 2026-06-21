@@ -90,7 +90,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public SysTask createTask(Long userId, String title, String description, LocalDate dueDate) {
+    public SysTask createTask(Long userId, String title, String description, String priority, LocalDate dueDate) {
         if (!StringUtils.hasText(title) || title.length() > 100) {
             throw new BusinessException(400, "标题必填且不超过100字符");
         }
@@ -100,11 +100,15 @@ public class TaskServiceImpl implements TaskService {
         if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
             throw new BusinessException(400, "截止日期不能早于今天");
         }
+        if (priority != null && !List.of("LOW", "MEDIUM", "HIGH").contains(priority)) {
+            throw new BusinessException(400, "无效的优先级值");
+        }
 
         SysTask task = new SysTask();
         task.setUserId(userId);
         task.setTitle(title.trim());
         task.setDescription(StringUtils.hasText(description) ? description.trim() : null);
+        task.setPriority(priority != null ? priority : "MEDIUM");
         task.setStatus("TODO");
         task.setDueDate(dueDate);
         taskMapper.insert(task);
@@ -112,7 +116,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public SysTask updateTask(Long userId, Long taskId, String title, String description, LocalDate dueDate) {
+    public SysTask updateTask(Long userId, Long taskId, String title, String description, String priority, LocalDate dueDate) {
         SysTask task = taskMapper.selectById(taskId);
         if (task == null || !task.getUserId().equals(userId)) {
             throw new BusinessException(ResultCode.NOT_FOUND);
@@ -129,6 +133,12 @@ public class TaskServiceImpl implements TaskService {
                 throw new BusinessException(400, "描述不超过500字符");
             }
             task.setDescription(description.trim());
+        }
+        if (priority != null) {
+            if (!List.of("LOW", "MEDIUM", "HIGH").contains(priority)) {
+                throw new BusinessException(400, "无效的优先级值");
+            }
+            task.setPriority(priority);
         }
         if (dueDate != null) {
             if (dueDate.isBefore(LocalDate.now())) {

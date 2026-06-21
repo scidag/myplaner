@@ -48,10 +48,11 @@ public class TaskController {
         Long userId = (Long) auth.getPrincipal();
         String title = (String) body.get("title");
         String description = (String) body.get("description");
+        String priority = (String) body.get("priority");
         LocalDate dueDate = body.get("dueDate") != null
                 ? LocalDate.parse((String) body.get("dueDate"))
                 : null;
-        return BaseResponse.success(taskService.createTask(userId, title, description, dueDate));
+        return BaseResponse.success(taskService.createTask(userId, title, description, priority, dueDate));
     }
 
     @PutMapping("/{id}")
@@ -62,10 +63,11 @@ public class TaskController {
         Long userId = (Long) auth.getPrincipal();
         String title = (String) body.get("title");
         String description = (String) body.get("description");
+        String priority = (String) body.get("priority");
         LocalDate dueDate = body.get("dueDate") != null
                 ? LocalDate.parse((String) body.get("dueDate"))
                 : null;
-        return BaseResponse.success(taskService.updateTask(userId, id, title, description, dueDate));
+        return BaseResponse.success(taskService.updateTask(userId, id, title, description, priority, dueDate));
     }
 
     @PatchMapping("/{id}/status")

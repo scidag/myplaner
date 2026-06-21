@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import Header from '../components/Header';
 import QuickAddBar from '../components/QuickAddBar';
+import AddTaskModal from '../components/AddTaskModal';
 import TodayPanel from '../components/TodayPanel';
 import TodoPanel from '../components/TodoPanel';
 import { createTask, updateTaskStatus, deleteTask } from '../api/tasks';
@@ -9,15 +10,17 @@ import { useToast } from '../components/Toast';
 export default function Home() {
   const toast = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const triggerRefresh = () => setRefreshKey((k) => k + 1);
 
-  const handleAdd = async ({ title, dueDate }) => {
+  const handleAdd = async ({ title, description, dueDate, priority }) => {
     setSubmitting(true);
     try {
-      await createTask({ title, dueDate });
+      await createTask({ title, description, dueDate, priority });
       toast('✅ 任务创建成功!', 'success');
+      setShowAddModal(false);
       triggerRefresh();
     } catch (err) {
       toast(err.message || '创建失败', 'error');
@@ -50,7 +53,15 @@ export default function Home() {
   return (
     <div className="app-shell">
       <Header />
-      <QuickAddBar onAdd={handleAdd} loading={submitting} />
+      <QuickAddBar onOpenModal={() => setShowAddModal(true)} />
+
+      {showAddModal && (
+        <AddTaskModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAdd}
+          loading={submitting}
+        />
+      )}
       <div className="dual-panel">
         <TodayPanel
           refreshKey={refreshKey}
