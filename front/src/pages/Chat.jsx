@@ -33,7 +33,13 @@ export default function Chat() {
     setLoadingSessions(true);
     try {
       const res = await listSessions();
-      const list = Array.isArray(res) ? res : [];
+      // 后端 SessionVO 返回 { session: {...}, lastMessage }，扁平化为 { id, title, preview }
+      const list = (Array.isArray(res) ? res : []).map((item) => ({
+        id: item.session?.id,
+        title: item.session?.title || '新对话',
+        preview: item.lastMessage || '',
+        updateTime: item.session?.updateTime,
+      }));
       setSessions(list);
       return list;
     } catch (err) {

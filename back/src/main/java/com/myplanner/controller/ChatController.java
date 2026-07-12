@@ -9,6 +9,7 @@ import com.myplanner.entity.SysChatSession;
 import com.myplanner.entity.SysTask;
 import com.myplanner.service.ChatService;
 import com.myplanner.service.dto.SessionVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/chat")
 public class ChatController {
 
@@ -89,7 +91,8 @@ public class ChatController {
                 .map(chunk -> sse(toMap("type", "chunk", "content", chunk)))
                 .concatWith(Flux.just(sse(toMap("type", "done"))))
                 .onErrorResume(e -> {
-                    // 仅对 BusinessException 透传 message，避免泄露内部错误细节
+                    // 打印真实异常，便于定位 DashScope 调用失败的原因
+                    log.error("SSE streamChat failed for session {}: {}", id, e.toString(), e);
                     String msg = (e instanceof BusinessException)
                             ? e.getMessage()
                             : "AI 服务暂时不可用，请稍后重试";

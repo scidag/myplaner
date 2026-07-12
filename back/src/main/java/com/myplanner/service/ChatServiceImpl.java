@@ -155,6 +155,7 @@ public class ChatServiceImpl implements ChatService {
                             .last("LIMIT " + CONTEXT_WINDOW));
             Collections.reverse(recent);
 
+            // 构建 Spring AI Message 列表
             List<Message> messages = new ArrayList<>();
             for (SysChatMessage m : recent) {
                 if (ROLE_USER.equals(m.getRole())) {
@@ -165,34 +166,55 @@ public class ChatServiceImpl implements ChatService {
             }
 
             StringBuilder fullResponse = new StringBuilder();
+            log.info("[streamChat] 开始调用 AI，sessionId={}, 消息数={}", sessionId, messages.size());
+
             return chatClient.prompt()
                     .messages(messages)
                     .stream()
                     .content()
-                    .doOnNext(fullResponse::append)
+                    .doOnNext(chunk -> {
+                        if (fullResponse.length() == 0) {
+                            log.info("[streamChat] 收到首个 AI 响应片段，sessionId={}", sessionId);
+                        }
+                        fullResponse.append(chunk);
+                    })
+                    .doOnError(e -> {
+                        log.error("[streamChat] AI 调用失败，sessionId={}, error={}: {}",
+                                sessionId, e.getClass().getSimpleName(), e.getMessage(), e);
+                        persistAiMessage(sessionId, "[AI 调用失败] " + e.getClass().getSimpleName(),
+                                e.getClass().getSimpleName(), e.getMessage());
+                    })
                     .doFinally(signal -> {
                         String reply = fullResponse.toString();
                         if (reply.isEmpty()) {
+                            sessionMapper.update(null, new LambdaUpdateWrapper<SysChatSession>()
+                                    .eq(SysChatSession::getId, sessionId)
+                                    .set(SysChatSession::getUpdateTime, LocalDateTime.now()));
                             return;
                         }
-                        Schedulers.boundedElastic().schedule(() -> {
-                            try {
-                                SysChatMessage aiMsg = new SysChatMessage();
-                                aiMsg.setSessionId(sessionId);
-                                aiMsg.setRole(ROLE_ASSISTANT);
-                                aiMsg.setContent(reply);
-                                aiMsg.setExtracted(0);
-                                messageMapper.insert(aiMsg);
-                                // 仅更新 update_time，避免覆盖用户在此期间可能重命名的 title
-                                sessionMapper.update(null, new LambdaUpdateWrapper<SysChatSession>()
-                                        .eq(SysChatSession::getId, sessionId)
-                                        .set(SysChatSession::getUpdateTime, LocalDateTime.now()));
-                            } catch (Exception e) {
-                                log.error("Failed to persist AI message for session {}", sessionId, e);
-                            }
-                        });
+                        log.info("[streamChat] AI 响应完成，sessionId={}, 字符数={}", sessionId, reply.length());
+                        persistAiMessage(sessionId, reply, null, null);
                     });
         });
+    }
+
+    /** 持久化 AI 消息到数据库（成功或失败都存） */
+    private void persistAiMessage(Long sessionId, String content, String errorCode, String errorMessage) {
+        try {
+            SysChatMessage aiMsg = new SysChatMessage();
+            aiMsg.setSessionId(sessionId);
+            aiMsg.setRole(ROLE_ASSISTANT);
+            aiMsg.setContent(content);
+            aiMsg.setErrorCode(errorCode);
+            aiMsg.setErrorMessage(errorMessage);
+            aiMsg.setExtracted(0);
+            messageMapper.insert(aiMsg);
+            sessionMapper.update(null, new LambdaUpdateWrapper<SysChatSession>()
+                    .eq(SysChatSession::getId, sessionId)
+                    .set(SysChatSession::getUpdateTime, LocalDateTime.now()));
+        } catch (Exception e) {
+            log.error("Failed to persist AI message for session {}", sessionId, e);
+        }
     }
 
     @Override

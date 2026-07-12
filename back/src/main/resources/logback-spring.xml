@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 日志文件存放目录：back/src/main/resources/log/ -->
+    <property name="LOG_PATH" value="src/main/resources/log"/>
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - %msg%n"/>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 按天滚动日志文件，每天一个新文件，文件名以日期命名 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 不指定 <file>，让 fileNamePattern 直接生成当天日志文件名 myplanner-2026-07-12.log -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 当天活动日志 + 归档文件名都使用此格式 -->
+            <fileNamePattern>${LOG_PATH}/myplanner-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- MyBatis SQL 日志 -->
+    <logger name="com.myplanner.mapper" level="DEBUG"/>
+    <!-- MyPlanner 业务日志（含 streamChat 调试日志） -->
+    <logger name="com.myplanner" level="INFO"/>
+    <!-- Spring AI 调用日志，便于排查 DashScope 问题 -->
+    <logger name="org.springframework.ai" level="DEBUG"/>
+    <!-- DashScope SDK 日志 -->
+    <logger name="com.alibaba.cloud.ai" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

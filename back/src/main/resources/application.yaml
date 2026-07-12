@@ -1,20 +1,32 @@
 server:
   port: 8080
-
 spring:
+  profiles:
+    active: local
   datasource:
     url: jdbc:mysql://localhost:3306/myplanner?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   ai:
-    dashscope:
+    # Spring AI 1.1.0 新增：用顶级属性启用模型自动配置
+    # 改用 openai 模型自动配置，因为百炼工作区域名只支持 OpenAI 兼容端点
+    model:
+      chat: openai
+    openai:
       api-key: ${DASHSCOPE_API_KEY:}
+      # 百炼的 OpenAI 兼容端点 base-url，工作区域名 + /compatible-mode
+      base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
       chat:
         options:
-          model: deepseek-chat
+          model: qwen3.7-plus
           temperature: 0.7
-          max-tokens: 4096
+
+# Reactor Netty 超时配置，避免 SSL 握手或网络问题导致流式调用卡死
+reactor:
+  netty:
+    response-timeout: 30s
+    connect-timeout: 10000
 
 mybatis-plus:
   global-config:
