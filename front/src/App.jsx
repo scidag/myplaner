@@ -1,9 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/Toast';
+import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import AllTasks from './pages/AllTasks';
+import Chat from './pages/Chat';
+import ChatToTodo from './pages/ChatToTodo';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -42,7 +45,29 @@ export default function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <Home />
+                <AppLayout>
+                  <Home />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Chat />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat-to-todo"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ChatToTodo />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
@@ -50,7 +75,9 @@ export default function App() {
             path="/tasks"
             element={
               <ProtectedRoute>
-                <AllTasks />
+                <AppLayout>
+                  <AllTasks />
+                </AppLayout>
               </ProtectedRoute>
             }
           />

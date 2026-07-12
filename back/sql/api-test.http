@@ -1,0 +1,240 @@
+### ========================================
+### MyPlanner API 测试脚本
+### 使用 VS Code REST Client 插件执行
+### 或直接用 curl 命令
+### ========================================
+
+### 1. 用户注册
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "password": "abc12345"
+}
+
+### 2. 注册 - 参数错误（用户名太短）
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "password": "abc12345"
+}
+
+### 3. 注册 - 用户名已存在
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "abc12345"
+}
+
+### 4. 用户登录
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "abc12345"
+}
+
+### 5. 登录 - 密码错误
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "wrongpass"
+}
+
+### ========================================
+### 以下请求需要先调用登录接口，把返回的 token 填入 @token 变量
+### ========================================
+@token = PASTE_YOUR_TOKEN_HERE
+
+### 6. 创建任务
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "学习 Vue.js",
+  "description": "对比 React 和 Vue 的异同",
+  "dueDate": "2026-07-01"
+}
+
+### 7. 创建任务 - 仅标题
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "快速创建任务"
+}
+
+### 8. 查询任务列表（默认分页）
+GET http://localhost:8080/api/tasks
+Authorization: Bearer {{token}}
+
+### 9. 查询任务列表 - 筛选状态
+GET http://localhost:8080/api/tasks?status=TODO
+Authorization: Bearer {{token}}
+
+### 10. 查询任务列表 - 关键字搜索
+GET http://localhost:8080/api/tasks?keyword=Spring
+Authorization: Bearer {{token}}
+
+### 11. 查询任务列表 - 分页
+GET http://localhost:8080/api/tasks?page=1&size=3
+Authorization: Bearer {{token}}
+
+### 12. 更新任务（替换 {id} 为实际任务ID）
+PUT http://localhost:8080/api/tasks/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "更新后的标题",
+  "description": "更新描述"
+}
+
+### 13. 切换任务状态为 DONE
+PATCH http://localhost:8080/api/tasks/1/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "DONE"
+}
+
+### 14. 切换任务状态为 TODO
+PATCH http://localhost:8080/api/tasks/1/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "TODO"
+}
+
+### 15. 批量切换任务状态为 DONE（替换 ID 为实际任务ID）
+PATCH http://localhost:8080/api/tasks/batch/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ids": [1, 2, 3],
+  "status": "DONE"
+}
+
+### 16. 删除任务（替换 {id} 为实际任务ID）
+DELETE http://localhost:8080/api/tasks/1
+Authorization: Bearer {{token}}
+
+### 17. 批量删除任务（替换 ID 为实际任务ID）
+DELETE http://localhost:8080/api/tasks/batch
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ids": [1, 2, 3]
+}
+
+### 18. 无 Token 访问（应返回 401）
+GET http://localhost:8080/api/tasks
+
+### 19. Token 过期或非法（应返回 401）
+GET http://localhost:8080/api/tasks
+Authorization: Bearer invalidtoken123
+
+### ========================================
+### AI 对话相关接口
+### ========================================
+
+### 20. 创建对话会话
+POST http://localhost:8080/api/chat/sessions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "新对话"
+}
+
+### 21. 创建对话会话 - 默认标题
+POST http://localhost:8080/api/chat/sessions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{}
+
+### 22. 获取会话列表
+GET http://localhost:8080/api/chat/sessions
+Authorization: Bearer {{token}}
+
+### 23. 重命名会话（替换 {id} 为实际会话ID）
+PATCH http://localhost:8080/api/chat/sessions/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "学习计划讨论"
+}
+
+### 24. 获取会话历史消息
+GET http://localhost:8080/api/chat/sessions/1/messages
+Authorization: Bearer {{token}}
+
+### 25. 发送消息（SSE 流式响应）
+### 注意：VS Code REST Client 支持 SSE，每条 data 是一个 JSON 事件
+POST http://localhost:8080/api/chat/sessions/1/messages
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Accept: text/event-stream
+
+{
+  "content": "帮我规划本周的学习计划"
+}
+
+### 26. 单条消息转任务（替换 {id} 为实际消息ID）
+POST http://localhost:8080/api/chat/messages/1/to-task
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "学习 Spring AI",
+  "description": "阅读官方文档并跑通示例",
+  "dueDate": "2026-07-20"
+}
+
+### 27. 抽取会话内全部任务候选
+POST http://localhost:8080/api/chat/sessions/1/extract-tasks
+Authorization: Bearer {{token}}
+
+### 28. 批量创建候选任务为待办
+POST http://localhost:8080/api/chat/tasks/batch
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "tasks": [
+    {
+      "title": "复习 Java 基础",
+      "description": "重点复习集合框架",
+      "dueDate": "2026-07-18"
+    },
+    {
+      "title": "完成 MyBatis-Plus 练习",
+      "description": null,
+      "dueDate": null
+    }
+  ]
+}
+
+### 29. 删除会话（级联删除消息，替换 {id} 为实际会话ID）
+DELETE http://localhost:8080/api/chat/sessions/1
+Authorization: Bearer {{token}}
+
+### 30. 越权访问他人会话（应返回 404，不会泄露会话是否存在）
+GET http://localhost:8080/api/chat/sessions/99999/messages
+Authorization: Bearer {{token}}

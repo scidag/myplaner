@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import Header from '../components/Header';
 import QuickAddBar from '../components/QuickAddBar';
 import AddTaskModal from '../components/AddTaskModal';
 import TodayPanel from '../components/TodayPanel';
@@ -52,7 +51,6 @@ export default function Home() {
 
   return (
     <div className="app-shell">
-      <Header />
       <QuickAddBar onOpenModal={() => setShowAddModal(true)} />
 
       {showAddModal && (

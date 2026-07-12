@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import StatsStrip from '../components/StatsStrip';
 import FilterBar from '../components/FilterBar';
 import ActionBar from '../components/ActionBar';
@@ -15,7 +14,6 @@ const DEFAULT_FILTERS = {
 };
 
 export default function AllTasks() {
-  const navigate = useNavigate();
   const toast = useToast();
   const searchInputRef = useRef(null);
 
@@ -51,10 +49,12 @@ export default function AllTasks() {
 
       const cnt = { ALL: 0, TODO: 0, IN_PROGRESS: 0, DONE: 0 };
       if (res.total != null) {
-        const allRes = await getTasks({ page: 1, size: 1 });
-        const todoRes = await getTasks({ page: 1, size: 1, status: 'TODO' });
-        const progRes = await getTasks({ page: 1, size: 1, status: 'IN_PROGRESS' });
-        const doneRes = await getTasks({ page: 1, size: 1, status: 'DONE' });
+        const [allRes, todoRes, progRes, doneRes] = await Promise.all([
+          getTasks({ page: 1, size: 1 }),
+          getTasks({ page: 1, size: 1, status: 'TODO' }),
+          getTasks({ page: 1, size: 1, status: 'IN_PROGRESS' }),
+          getTasks({ page: 1, size: 1, status: 'DONE' }),
+        ]);
         cnt.ALL = allRes.total || 0;
         cnt.TODO = todoRes.total || 0;
         cnt.IN_PROGRESS = progRes.total || 0;
@@ -191,12 +191,6 @@ export default function AllTasks() {
       {/* Top Navigation */}
       <nav className="top-nav">
         <div className="nav-left">
-          <button className="btn-back" onClick={() => navigate('/')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            返回
-          </button>
           <div className="nav-title-group">
             <h1 className="nav-title">📋 全部任务</h1>
             <span className="nav-breadcrumb">/ 任务管理</span>

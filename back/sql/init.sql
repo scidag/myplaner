@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS sys_task (
     user_id        BIGINT       NOT NULL COMMENT '关联用户ID',
     title          VARCHAR(100) NOT NULL COMMENT '任务标题',
     description    VARCHAR(500) DEFAULT NULL COMMENT '详细描述',
+    priority       VARCHAR(10)  NOT NULL DEFAULT 'MEDIUM' COMMENT '优先级: LOW, MEDIUM, HIGH',
     status         VARCHAR(20)  NOT NULL DEFAULT 'TODO' COMMENT '状态: TODO, IN_PROGRESS, DONE',
     due_date       DATE         DEFAULT NULL COMMENT '截止日期',
     completed_time DATETIME     DEFAULT NULL COMMENT '完成时间',
@@ -26,7 +27,6 @@ CREATE TABLE IF NOT EXISTS sys_task (
     create_time    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
-    KEY idx_user_id (user_id),
     KEY idx_user_status (user_id, status),
     KEY idx_user_due_date (user_id, due_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务表';

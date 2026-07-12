@@ -21,6 +21,9 @@ public class JwtUtil {
 
     public JwtUtil(@Value("${myplanner.jwt.secret}") String secret,
                    @Value("${myplanner.jwt.expiration}") long expiration) {
+        if (secret == null || secret.isBlank() || secret.startsWith("local-dev-only")) {
+            log.warn("⚠️ JWT secret 未通过 JWT_SECRET 环境变量正确配置，正在使用不安全的默认值。生产环境必须设置 JWT_SECRET 环境变量！");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = expiration;
     }
