@@ -7,7 +7,7 @@ function getLocalDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function TodayPanel({ refreshKey, onStatusChange, onDelete }) {
+export default function TodayPanel({ refreshKey, onStatusChange, onDelete, onView }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => getLocalDate(new Date()));
@@ -111,6 +111,7 @@ export default function TodayPanel({ refreshKey, onStatusChange, onDelete }) {
                 index={i}
                 onStatusChange={onStatusChange}
                 onDelete={onDelete}
+                onView={onView}
               />
             ))}
           </>

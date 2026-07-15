@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TaskCard from './TaskCard';
 import { getTasks } from '../api/tasks';
 
-export default function TodoPanel({ refreshKey, onStatusChange, onDelete }) {
+export default function TodoPanel({ refreshKey, onStatusChange, onDelete, onView }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -73,6 +73,7 @@ export default function TodoPanel({ refreshKey, onStatusChange, onDelete }) {
                 index={i}
                 onStatusChange={onStatusChange}
                 onDelete={onDelete}
+                onView={onView}
               />
             ))}
           </>

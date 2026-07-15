@@ -46,6 +46,7 @@ export default function TaskCandidateCard({
               value={title || ''}
               onChange={(e) => handleField('title', e.target.value)}
               placeholder="请输入任务标题"
+              maxLength={100}
             />
           </div>
           <div className="field-group">
@@ -59,13 +60,17 @@ export default function TaskCandidateCard({
           </div>
         </div>
         <div className="field-group" style={{ marginBottom: 0 }}>
-          <label className="field-label">描述</label>
+          <label className="field-label">
+            描述
+            <span className="field-char-count">{(description || '').length}/500</span>
+          </label>
           <textarea
             className="field-textarea"
             rows={2}
             value={description || ''}
             onChange={(e) => handleField('description', e.target.value)}
             placeholder="补充任务描述（可选）"
+            maxLength={500}
           />
         </div>
         {hasSource && (
