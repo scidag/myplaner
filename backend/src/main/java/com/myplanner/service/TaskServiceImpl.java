@@ -129,8 +129,8 @@ public class TaskServiceImpl implements TaskService {
             task.setTitle(title.trim());
         }
         if (description != null) {
-            if (description.length() > 500) {
-                throw new BusinessException(400, "描述不超过500字符");
+            if (description.length() > 100000) {
+                throw new BusinessException(400, "描述不超过100000字符");
             }
             task.setDescription(description.trim());
         }

@@ -122,7 +122,7 @@ export default function AddTaskModal({ onClose, onAdd, loading }) {
               placeholder="添加更多细节、备注或相关链接..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              maxLength={500}
+              maxLength={100000}
               rows={3}
             />
           </div>

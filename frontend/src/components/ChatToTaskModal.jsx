@@ -29,7 +29,7 @@ export default function ChatToTaskModal({ message, onClose, onConfirm, loading }
       const raw = message.content || '';
       setTitle(extractTitle(raw));
       // 把完整内容作为描述（截断过长文本）
-      setDescription(raw.length > 500 ? raw.slice(0, 500) : raw);
+      setDescription(raw.length > 100000 ? raw.slice(0, 100000) : raw);
     }
   }, [message]);
 
@@ -110,7 +110,7 @@ export default function ChatToTaskModal({ message, onClose, onConfirm, loading }
               placeholder="任务描述..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              maxLength={500}
+              maxLength={100000}
               rows={5}
             />
           </div>

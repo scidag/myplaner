@@ -4136,3 +4136,110 @@ body {
     justify-content: center;
   }
 }
+
+/* =====================================================
+   深色主题原生控件适配（滚动条 / 日期选择器 / 下拉面板）
+   ===================================================== */
+
+/* 1) 全局深色滚动条：避免 textarea / 列表在深色背景上出现白色滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 2) 日期 / 时间 / 颜色 / 月份等原生 input 的深色主题适配
+   color-scheme: dark 会让浏览器原生弹出的日期面板、日历图标自动渲染为深色 */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+
+/* WebKit 下日期选择器右侧的日历图标默认是深色，在深色背景上不可见；用滤镜反转为亮色 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.9) brightness(1.2);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 150ms;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover,
+input[type="week"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Firefox 下日期选择器图标适配 */
+input[type="date"]::-moz-calendar-picker-indicator {
+  filter: invert(0.9) brightness(1.2);
+  cursor: pointer;
+}
+
+/* 3) select 下拉面板（option 列表）深色适配 */
+select option {
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+}
+
+select option:checked,
+select option:hover {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-light);
+}
+
+/* 4) Chat-to-Todo 来源片段（source-snippet）深色主题文字对比度修复
+   原色 #92400E 在半透明 warning 背景上对比度不足，改为亮色 */
+.source-snippet {
+  color: #FDE68A;
+  background: rgba(245, 158, 11, 0.12);
+  border-left-color: var(--color-warning);
+}
+
+.source-snippet:hover {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FEF3C7;
+}
+
+.source-snippet-label {
+  color: var(--color-warning);
+}
+
+/* 5) 候选任务卡片内 textarea 描述区滚动条深色适配（继承全局即可，此处显式声明兜底） */
+.field-textarea,
+.add-field-textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+

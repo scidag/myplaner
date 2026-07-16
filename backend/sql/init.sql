@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS sys_task (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
     user_id        BIGINT       NOT NULL COMMENT '关联用户ID',
     title          VARCHAR(100) NOT NULL COMMENT '任务标题',
-    description    VARCHAR(500) DEFAULT NULL COMMENT '详细描述',
+    description    LONGTEXT     DEFAULT NULL COMMENT '详细描述（支持长文本，最大约 4GB）',
     priority       VARCHAR(10)  NOT NULL DEFAULT 'MEDIUM' COMMENT '优先级: LOW, MEDIUM, HIGH',
     status         VARCHAR(20)  NOT NULL DEFAULT 'TODO' COMMENT '状态: TODO, IN_PROGRESS, DONE',
     due_date       DATE         DEFAULT NULL COMMENT '截止日期',

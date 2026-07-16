@@ -40,7 +40,7 @@ export default function EditTaskModal({ task, onClose, onSave }) {
           </div>
           <div className="form-group">
             <label>描述（选填）</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder="添加描述..." />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={100000} placeholder="添加描述..." />
           </div>
           <div className="form-group">
             <label>状态</label>
