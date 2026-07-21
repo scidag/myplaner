@@ -94,8 +94,8 @@ public class TaskServiceImpl implements TaskService {
         if (!StringUtils.hasText(title) || title.length() > 100) {
             throw new BusinessException(400, "标题必填且不超过100字符");
         }
-        if (StringUtils.hasText(description) && description.length() > 500) {
-            throw new BusinessException(400, "描述不超过500字符");
+        if (description != null && description.length() > 100000) {
+            throw new BusinessException(400, "描述不超过100000字符");
         }
         if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
             throw new BusinessException(400, "截止日期不能早于今天");
